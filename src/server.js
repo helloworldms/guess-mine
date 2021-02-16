@@ -1,6 +1,7 @@
 import { join } from "path";
 import express from "express";
 import socketIo from "socket.io";
+import logger from "morgan";
 
 const PORT = 4000;
 const app = express();
@@ -9,8 +10,19 @@ app.set("view engine", "pug");
 app.set("views", join(__dirname, "views"));
 app.get("/", (req, res) => res.render("home"));
 app.use(express.static(join(__dirname, "static")));
+app.use(logger("dev"));
 
 const handleListening = () =>
   console.log(`Server running: http://localhost:${PORT}`);
 
-app.listen(PORT, handleListening);
+const server = app.listen(PORT, handleListening);
+
+const io = socketIo(server);
+
+let sockets = [];
+
+io.on("connection", (socket) => {
+  setTimeout(() => socket.broadcast.emit("hello"), 5000);
+});
+
+// setInterval(() => console.log(sockets), 1000);
